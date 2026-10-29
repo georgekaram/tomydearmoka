@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To my dear moka - Will You Be My Valentine?</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cairo:wght@400;600;700&family=Dancing+Script:wght@500;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rose: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            200: '#fecdd3',
+                            300: '#fda4af',
+                            400: '#fb7185',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            700: '#be123c',
+                            800: '#9f1239',
+                            900: '#881337',
+                        }
+                    },
+                    fontFamily: {
+                        cursive: ['"Dancing Script"', 'cursive'],
+                        calligraphy: ['"Alex Brush"', 'cursive'],
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['"Inter"', 'sans-serif'],
+                        arabic: ['"Cairo"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Styles & Glassmorphism */
+        body {
+            background: linear-gradient(135deg, #fff0f3 0%, #ffccd5 40%, #ffb3c1 70%, #ff8fa3 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 20px 40px rgba(225, 29, 72, 0.12);
+        }
+
+        .glass-card-hover {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .glass-card-hover:hover {
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: 0 25px 50px rgba(225, 29, 72, 0.2);
+        }
+
+        /* Pulse Heart Animation */
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.15); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.15); }
+            70% { transform: scale(1); }
+        }
+
+        .animate-heartbeat {
+            animation: heartbeat 1.8s infinite ease-in-out;
+        }
+
+        /* Floating Animation */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(3deg); }
+        }
+
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #fff0f3;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fb7185;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #e11d48;
+        }
+
+        /* Perspective Flip Cards */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .flip-card-inner {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .flip-card:hover .flip-card-inner, .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+
+        /* Heart Canvas background overlay */
+        #heartCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="text-slate-800 relative antialiased selection:bg-rose-200 selection:text-rose-900">
+
+    <!-- Interactive Background Heart Canvas -->
+    <canvas id="heartCanvas"></canvas>
+
+    <!-- Main Navigation Bar -->
+    <nav class="sticky top-0 z-40 backdrop-blur-md bg-white/40 border-b border-rose-200/50 px-4 py-3 transition-all duration-300">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <a href="#" class="flex items-center gap-2 group">
+                <span class="text-rose-600 text-2xl animate-heartbeat"><i class="fa-solid font-bold fa-heart"></i></span>
+                <span class="font-calligraphy text-3xl md:text-4xl text-rose-700 group-hover:text-rose-900 transition-colors">To my dear moka</span>
+            </a>
+            
+            <div class="flex items-center gap-3">
+                <!-- Music Player Toggle -->
+                <button id="musicToggleBtn" onclick="toggleAudio()" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/70 hover:bg-rose-100 text-rose-700 text-xs md:text-sm font-medium border border-rose-200 shadow-sm transition-all" title="Toggle Music">
+                    <i id="musicIcon" class="fa-solid fa-music text-rose-500"></i>
+                    <span id="musicText" class="hidden sm:inline">Play Sound</span>
+                </button>
+
+                <!-- Navigation Quick Links -->
+                <a href="#gallery" class="px-3 py-1.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 text-xs md:text-sm font-medium transition-colors">
+                    <i class="fa-solid fa-images mr-1"></i> Gallery
+                </a>
+                <a href="#memories" class="px-3 py-1.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 text-xs md:text-sm font-medium transition-colors">
+                    <i class="fa-solid fa-envelope-open-text mr-1"></i> Letter
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content Wrapper -->
+    <main class="relative z-10 max-w-5xl mx-auto px-4 py-8 space-y-16">
+
+        <!-- HEADER / HERO SECTION -->
+        <header class="text-center space-y-4 pt-6">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-100/80 border border-rose-300/60 text-rose-700 text-xs md:text-sm font-semibold tracking-wide uppercase animate-pulse">
+                <i class="fa-solid fa-sparkles"></i> A Special Message For You <i class="fa-solid fa-sparkles"></i>
+            </div>
+            <h1 class="font-calligraphy text-6xl md:text-8xl text-rose-700 drop-shadow-md py-2">to my dear moka</h1>
+            <p class="font-cursive text-2xl md:text-3xl text-rose-800/90 max-w-xl mx-auto">
+                "In all the world, there is no heart for me like yours. In all the world, there is no love for you like mine."
+            </p>
+        </header>
+
+        <!-- CENTRAL INTERACTIVE VALENTINE PROPOSAL CARD -->
+        <section id="valentineProposal" class="relative max-w-2xl mx-auto">
+            <div class="glass-card rounded-3xl p-8 md:p-12 text-center relative overflow-hidden border-2 border-rose-200 shadow-2xl">
+                <!-- Floating Decorative Elements -->
+                <div class="absolute -top-6 -left-6 text-rose-300 text-6xl opacity-40 animate-float"><i class="fa-solid fa-heart"></i></div>
+                <div class="absolute -bottom-6 -right-6 text-rose-300 text-6xl opacity-40 animate-float" style="animation-delay: 2s;"><i class="fa-solid fa-heart"></i></div>
+
+                <div class="space-y-6 relative z-10">
+                    <div class="w-24 h-24 mx-auto rounded-full bg-rose-100 border-2 border-rose-300 flex items-center justify-center text-rose-600 text-5xl shadow-inner animate-heartbeat">
+                        <i class="fa-solid fa-heart-circle-bolt"></i>
+                    </div>
+
+                    <h2 class="font-serif text-3xl md:text-4xl text-rose-900 font-bold leading-tight">
+                        Will You Be My Valentine? 💖
+                    </h2>
+
+                    <p class="text-slate-600 text-sm md:text-base max-w-md mx-auto">
+                        My heart has something important to ask you... Please say yes and make this day unforgettable!
+                    </p>
+
+                    <!-- Interactive Buttons Area -->
+                    <div id="buttonContainer" class="min-h-[120px] flex flex-wrap items-center justify-center gap-6 pt-4 relative">
+                        <!-- YES BUTTON -->
+                        <button id="yesBtn" onclick="acceptValentine()" class="px-8 py-4 bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-bold text-lg md:text-xl rounded-2xl shadow-lg hover:shadow-rose-500/40 transform hover:-translate-y-1 active:translate-y-0 transition-all duration-300 flex items-center gap-3">
+                            <i class="fa-solid fa-heart-pulse"></i> Yes, I'd Love To!
+                        </button>
+
+                        <!-- NO BUTTON (DODGING INTERACTIVE) -->
+                        <button id="noBtn" class="px-8 py-4 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-lg md:text-xl rounded-2xl shadow transition-all duration-200 flex items-center gap-2">
+                            <i class="fa-solid fa-face-frown"></i> No 😢
+                        </button>
+                    </div>
+
+                    <!-- Counter/Hints after multiple dodge attempts -->
+                    <p id="hintText" class="text-xs text-rose-500 italic opacity-0 transition-opacity duration-300">
+                        (Hint: The 'No' button seems a little shy today! 😉)
+                    </p>
+                </div>
+            </div>
+        <!-- CELEBRATION MODAL / OVERLAY (SHOWS UPON YES) -->
+        <div id="celebrationModal" class="fixed inset-0 z-50 bg-rose-950/60 backdrop-blur-md flex items-center justify-center p-4 hidden transition-opacity duration-500">
+            <div class="glass-card bg-white/95 rounded-3xl p-8 md:p-12 max-w-xl w-full text-center space-y-6 border-4 border-rose-300 shadow-2xl transform scale-90 transition-transform duration-500" id="celebrationCard">
+                <div class="text-6xl text-rose-500 animate-bounce">
+                    🎉 💖 🥳
+                </div>
+                
+                <h2 class="font-calligraphy text-5xl md:text-6xl text-rose-700">YAY! You Said Yes!</h2>
+                
+                <p class="font-serif text-lg text-slate-700 leading-relaxed">
+                    You just made me the happiest person in the world! Every moment with you is a gift, and I can't wait to celebrate love together.
+                </p>
+
+                <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm italic">
+                    "I love you not only for what you are, but for what I am when I am with you."
+                </div>
+
+                <div class="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
+                    <button onclick="closeCelebration()" class="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white font-medium rounded-xl shadow-md transition-all">
+                        Explore Your Gallery & Letters ❤️
+                    </button>
+                    <button onclick="triggerConfetti()" class="px-6 py-3 bg-rose-100 hover:bg-rose-200 text-rose-700 font-medium rounded-xl border border-rose-300 transition-all">
+                        More Confetti! 🎊
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PHOTO GALLERY SECTION -->
+        <section id="gallery" class="space-y-8 scroll-mt-20 pt-4">
+            <!-- Gallery Grid -->
+            <div id="galleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic Image Cards render here -->
+                <div class="col-span-full flex justify-center py-12 text-rose-400 animate-pulse">
+                    <i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading Memories...
+                </div>
+            </div>
+        </section>
+
+        <!-- LOVE LETTER & REASONS WHY SECTION -->
+        <section id="memories" class="space-y-12 scroll-mt-20">
+            <!-- Section Header -->
+            <div class="text-center max-w-xl mx-auto space-y-2">
+                <h2 class="font-serif text-3xl md:text-4xl text-rose-900 font-bold">
+                    <i class="fa-solid fa-envelope-heart text-rose-500 mr-2"></i> Love Notes & Memories
+                </h2>
+                <p class="text-slate-600 text-sm">Tap the cards to flip them and read sweet reasons why you mean so much to me.</p>
+            </div>
+
+            <!-- REASONS WHY FLIP CARDS GRID -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Flip Card 1 -->
+                <div class="flip-card h-48 cursor-pointer perspective-1000" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner relative w-full h-full rounded-2xl shadow-md border border-rose-200">
+                        <div class="flip-card-front absolute inset-0 bg-white/80 backdrop-blur-sm rounded-2xl p-6 flex flex-col items-center justify-center text-center">
+                            <i class="fa-solid fa-smile-beam text-3xl text-rose-400 mb-3"></i>
+                            <h3 class="font-serif font-bold text-lg text-rose-900">Your Radiant Smile</h3>
+                            <span class="text-xs text-rose-400 mt-2">Click to reveal 💕</span>
+                        </div>
+                        <div class="flip-card-back absolute inset-0 bg-gradient-to-br from-rose-500 to-rose-600 text-white rounded-2xl p-6 flex items-center justify-center text-center">
+                            <p class="font-cursive text-xl">"Your smile instantly brightens up my darkest days and fills my world with warmth."</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flip Card 2 -->
+                <div class="flip-card h-48 cursor-pointer perspective-1000" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner relative w-full h-full rounded-2xl shadow-md border border-rose-200">
+                        <div class="flip-card-front absolute inset-0 bg-white/80 backdrop-blur-sm rounded-2xl p-6 flex flex-col items-center justify-center text-center">
+                            <i class="fa-solid fa-hand-holding-heart text-3xl text-rose-400 mb-3"></i>
+                            <h3 class="font-serif font-bold text-lg text-rose-900">Your Kind Heart</h3>
+                            <span class="text-xs text-rose-400 mt-2">Click to reveal 💕</span>
+                        </div>
+                        <div class="flip-card-back absolute inset-0 bg-gradient-to-br from-rose-500 to-rose-600 text-white rounded-2xl p-6 flex items-center justify-center text-center">
+                            <p class="font-cursive text-xl">"The gentle and caring way you treat everyone inspires me to be a better person every day."</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flip Card 3 -->
+                <div class="flip-card h-48 cursor-pointer perspective-1000" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner relative w-full h-full rounded-2xl shadow-md border border-rose-200">
+                        <div class="flip-card-front absolute inset-0 bg-white/80 backdrop-blur-sm rounded-2xl p-6 flex flex-col items-center justify-center text-center">
+                            <i class="fa-solid fa-mug-hot text-3xl text-rose-400 mb-3"></i>
+                            <h3 class="font-serif font-bold text-lg text-rose-900">Your Special Moments</h3>
+                            <span class="text-xs text-rose-400 mt-2">Click to reveal 💕</span>
+                        </div>
+                        <div class="flip-card-back absolute inset-0 bg-gradient-to-br from-rose-500 to-rose-600 text-white rounded-2xl p-6 flex items-center justify-center text-center">
+                            <p class="font-cursive text-xl">"When i listened you for the first time your voice entered my heart exaxtly in your solo "Fe Zel Hemayatek" In Nahdet Al Adra ."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INTERACTIVE LOVE LETTER ENVELOPE -->
+            <div class="glass-card rounded-3xl p-6 md:p-10 border border-rose-200 shadow-xl max-w-3xl mx-auto space-y-6">
+                <div class="flex items-center justify-between border-b border-rose-200 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-feather-pointed"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-serif font-bold text-xl text-rose-900">A Letter To You</h3>
+                            <p class="text-xs text-slate-500">Written with love & devotion</p>
+                        </div>
+                    </div>
+                    <button onclick="openLetterModal()" class="text-xs text-rose-600 hover:text-rose-800 bg-rose-100/80 px-3 py-1.5 rounded-lg transition-all">
+                        <i class="fa-solid fa-pen-to-square"></i> Edit Note
+                    </button>
+                </div>
+
+                <div id="letterContent" class="font-cursive text-2xl text-slate-800 leading-relaxed bg-rose-50/60 p-6 rounded-2xl border border-rose-100 min-h-[160px] whitespace-pre-line text-center flex items-center justify-center">
+                    <i class="fa-solid fa-spinner fa-spin text-rose-400"></i>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="mt-20 border-t border-rose-200/60 bg-white/30 backdrop-blur-md py-8 text-center text-slate-600 text-sm">
+        <div class="max-w-4xl mx-auto px-4 space-y-2">
+            <p class="font-calligraphy text-3xl text-rose-700">to my dear moka</p>
+            <p>Made with endless love 💖 | From George to the only girl  who loved </p>
+        </div>
+    </footer>
+
+    <!-- MODAL: EDIT LOVE LETTER -->
+    <div id="letterEditModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="glass-card bg-white rounded-3xl p-6 md:p-8 max-w-2xl w-full space-y-4 border border-rose-200 shadow-2xl">
+            <h3 class="font-serif font-bold text-xl text-rose-900 flex items-center gap-2">
+                <i class="fa-solid fa-pen-nib text-rose-500"></i> Edit Love Letter
+            </h3>
+            <textarea id="letterEditArea" rows="8" class="w-full p-4 rounded-xl border border-rose-200 text-slate-700 font-cursive text-2xl focus:ring-2 focus:ring-rose-400 focus:outline-none shadow-inner bg-rose-50/30"></textarea>
+            <div class="flex justify-end gap-3 pt-2">
+                <button onclick="closeLetterModal()" class="px-5 py-2.5 text-slate-500 hover:text-slate-800 font-medium transition-colors">Cancel</button>
+                <button onclick="saveLetterModal()" class="px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-md transition-all font-medium flex items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Note
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX / IMAGE PREVIEW MODAL -->
+    <div id="lightboxModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden" onclick="closeLightbox()">
+        <div class="relative max-w-3xl w-full text-center space-y-3" onclick="event.stopPropagation()">
+            <button onclick="closeLightbox()" class="absolute -top-10 right-0 text-white text-2xl hover:text-rose-300">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <img id="lightboxImage" src="" class="max-h-[80vh] mx-auto rounded-2xl shadow-2xl object-contain border-2 border-white/20" alt="">
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC (STANDALONE VERSION) -->
+    <script>
+        /* ===================================================
+           1. FLOATING HEART CANVAS BACKGROUND
+           =================================================== */
+        const canvas = document.getElementById('heartCanvas');
+        const ctx = canvas.getContext('2d');
+        let hearts = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Heart {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 100;
+                this.size = Math.random() * 15 + 8;
+                this.speedY = Math.random() * 1.2 + 0.6;
+                this.speedX = Math.sin(Math.random() * Math.PI) * 0.5;
+                this.opacity = Math.random() * 0.5 + 0.3;
+                this.color = `hsla(${Math.random() * 20 + 340}, 85%, 65%, ${this.opacity})`;
+            }
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+                if (this.y < -20) this.reset();
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                const topCurveHeight = this.size * 0.3;
+                ctx.moveTo(0, topCurveHeight);
+                ctx.bezierCurveTo(0, 0, -this.size / 2, 0, -this.size / 2, topCurveHeight);
+                ctx.bezierCurveTo(-this.size / 2, (this.size + topCurveHeight) / 2, 0, this.size, 0, this.size);
+                ctx.bezierCurveTo(0, this.size, this.size / 2, (this.size + topCurveHeight) / 2, this.size / 2, topCurveHeight);
+                ctx.bezierCurveTo(this.size / 2, 0, 0, 0, 0, topCurveHeight);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < 35; i++) hearts.push(new Heart());
+
+        function animateHearts() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            hearts.forEach(heart => {
+                heart.update();
+                heart.draw();
+            });
+            requestAnimationFrame(animateHearts);
+        }
+        animateHearts();
+
+
+        /* ===================================================
+           2. PLAYFUL 'NO' BUTTON DODGE & 'YES' EXPANSION
+           =================================================== */
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const hintText = document.getElementById('hintText');
+        let dodgeCount = 0;
+        let yesScale = 1.0;
+        const playfulTexts = [
+            "Are you sure? 🥺", "Think again! 💖", "Give it another thought! 🌹",
+            "Wrong answer! 😜", "You can't click me! ✨", "Just click YES! 💕", "Pretty please? 🥹"
+        ];
+
+        function dodgeNoButton() {
+            dodgeCount++;
+            if (dodgeCount >= 2) hintText.classList.remove('opacity-0');
+
+            const textIndex = Math.min(dodgeCount - 1, playfulTexts.length - 1);
+            noBtn.innerHTML = `<i class="fa-solid fa-face-flushed"></i> ${playfulTexts[textIndex]}`;
+
+            yesScale += 0.12;
+            yesBtn.style.transform = `scale(${yesScale})`;
+
+            const container = document.getElementById('buttonContainer');
+            const rect = container.getBoundingClientRect();
+            const maxX = rect.width - noBtn.offsetWidth - 20;
+            const maxY = rect.height - noBtn.offsetHeight - 20;
+
+            const randomX = Math.max(10, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(10, Math.floor(Math.random() * maxY));
+
+            noBtn.style.position = 'absolute';
+            noBtn.style.left = `${randomX}px`;
+            noBtn.style.top = `${randomY}px`;
+        }
+        noBtn.addEventListener('mouseenter', dodgeNoButton);
+        noBtn.addEventListener('click', (e) => { e.preventDefault(); dodgeNoButton(); });
+
+
+        /* ===================================================
+           3. CELEBRATION & CONFETTI SYSTEM
+           =================================================== */
+        function acceptValentine() {
+            triggerConfetti();
+            const modal = document.getElementById('celebrationModal');
+            const card = document.getElementById('celebrationCard');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                card.classList.remove('scale-90');
+                card.classList.add('scale-100');
+            }, 50);
+            playChimeSound();
+        }
+
+        function closeCelebration() {
+            document.getElementById('celebrationModal').classList.add('hidden');
+        }
+
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#f43f5e', '#fb7185', '#ffe4e6', '#e11d48', '#ffffff'] });
+                setTimeout(() => {
+                    confetti({ particleCount: 50, angle: 60, spread: 55, origin: { x: 0 } });
+                    confetti({ particleCount: 50, angle: 120, spread: 55, origin: { x: 1 } });
+                }, 300);
+            }
+        }
+
+
+        /* ===================================================
+           4. GALLERY & IMAGE UPLOADER (LocalStorage Version)
+           =================================================== */
+        const defaultMemories = [
+            { id: '1', url: 'https://i.postimg.cc/1zWnSGQT/Snap-Insta-to-784541187-18436908097131467-1503853920337732219-n.webp' },
+            { id: '2', url: 'https://i.postimg.cc/QCDrnzz5/Snap-Insta-to-786121597-18436908112131467-7503446965863709976-n.webp' },
+            { id: '3', url: 'https://i.postimg.cc/SsWB8rxB/Snap-Insta-to-786121619-18436908133131467-2475307926648407075-n.webp' }
+        ];
+
+        let memories = [];
+
+        function loadMemories() {
+            const stored = localStorage.getItem('to_my_dear_memories');
+            if (stored) {
+                try {
+                    memories = JSON.parse(stored);
+                } catch (e) {
+                    memories = defaultMemories;
+                }
+            } else {
+                memories = defaultMemories;
+            }
+            renderGallery();
+        }
+
+        function saveMemories() {
+            localStorage.setItem('to_my_dear_memories', JSON.stringify(memories));
+            renderGallery();
+        }
+
+        function renderGallery() {
+            const grid = document.getElementById('galleryGrid');
+            grid.innerHTML = '';
+
+            if (memories.length === 0) {
+                grid.innerHTML = `<div class="col-span-full flex justify-center py-12 text-slate-400">No memories yet. Add your first one!</div>`;
+                return;
+            }
+
+            memories.forEach((item) => {
+                const card = document.createElement('div');
+                card.className = 'glass-card glass-card-hover rounded-2xl overflow-hidden border border-rose-200/80 group relative flex flex-col';
+                card.innerHTML = `
+                    <div class="relative h-64 overflow-hidden bg-rose-100 cursor-pointer" onclick="openLightbox('${item.url}')">
+                        <img src="${item.url}" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/600x400/fecdd3/881337?text=Image'">
+                        <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-lg">
+                            <i class="fa-solid fa-magnifying-glass-plus"></i>
+                        </div>
+                    </div>
+                    <button onclick="deleteMemory('${item.id}')" class="absolute top-2 right-2 w-8 h-8 bg-white/70 backdrop-blur-md rounded-full text-slate-400 hover:text-rose-600 hover:bg-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow" title="Delete">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function deleteMemory(id) {
+            memories = memories.filter(m => m.id !== id);
+            saveMemories();
+        }
+
+        let currentUploadTab = 'file';
+        let tempBase64Image = '';
+
+        function openUploadModal() { document.getElementById('uploadModal').classList.remove('hidden'); }
+        function closeUploadModal() { document.getElementById('uploadModal').classList.add('hidden'); resetUploadForm(); }
+
+        function switchUploadTab(tab) {
+            currentUploadTab = tab;
+            const tabFileBtn = document.getElementById('tabFileBtn');
+            const tabUrlBtn = document.getElementById('tabUrlBtn');
+            const fileContainer = document.getElementById('fileInputContainer');
+            const urlContainer = document.getElementById('urlInputContainer');
+
+            if (tab === 'file') {
+                tabFileBtn.classList.add('bg-white', 'shadow-sm');
+                tabUrlBtn.classList.remove('bg-white', 'shadow-sm');
+                fileContainer.classList.remove('hidden');
+                urlContainer.classList.add('hidden');
+            } else {
+                tabUrlBtn.classList.add('bg-white', 'shadow-sm');
+                tabFileBtn.classList.remove('bg-white', 'shadow-sm');
+                urlContainer.classList.remove('hidden');
+                fileContainer.classList.add('hidden');
+            }
+        }
+
+        function previewFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    tempBase64Image = e.target.result;
+                    const previewImg = document.getElementById('filePreviewImage');
+                    const placeholder = document.getElementById('filePreviewPlaceholder');
+                    previewImg.src = tempBase64Image;
+                    previewImg.classList.remove('hidden');
+                    placeholder.classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handlePhotoSubmit(e) {
+            e.preventDefault();
+            let finalUrl = '';
+            
+            if (currentUploadTab === 'file') {
+                if (!tempBase64Image) return;
+                finalUrl = tempBase64Image;
+            } else {
+                finalUrl = document.getElementById('imageUrlInput').value.trim();
+                if (!finalUrl) return;
+            }
+
+            const newMemory = {
+                id: Date.now().toString(),
+                url: finalUrl
+            };
+            
+            memories.unshift(newMemory);
+            saveMemories();
+            closeUploadModal();
+        }
+
+        function resetUploadForm() {
+            document.getElementById('photoForm').reset();
+            tempBase64Image = '';
+            document.getElementById('filePreviewImage').classList.add('hidden');
+            document.getElementById('filePreviewPlaceholder').classList.remove('hidden');
+        }
+
+        function openLightbox(url) {
+            document.getElementById('lightboxImage').src = url;
+            document.getElementById('lightboxModal').classList.remove('hidden');
+        }
+        
+        function closeLightbox() { document.getElementById('lightboxModal').classList.add('hidden'); }
+
+
+        /* ===================================================
+           5. LOVE LETTER EDITING (LocalStorage Version)
+           =================================================== */
+        function loadSavedLetter() {
+            const letterElem = document.getElementById('letterContent');
+            const saved = localStorage.getItem('to_my_dear_letter');
+            const defaultLetter = "My dearest,\n\nFrom the moment you entered my life, everything became brighter, warmer, and infinitely more beautiful. You have a way of making ordinary moments feel magical.\n\nThank you for your warmth, your laughter, and the endless joy you bring into my world. I look forward to creating many more unforgettable memories together.\n\nForever and always yours ❤️";
+            
+            // Remove spinner styling
+            letterElem.className = "font-cursive text-2xl text-slate-800 leading-relaxed bg-rose-50/60 p-6 rounded-2xl border border-rose-100 min-h-[160px] whitespace-pre-line";
+            letterElem.innerText = saved ? saved : defaultLetter;
+        }
+
+        function openLetterModal() {
+            const currentText = document.getElementById('letterContent').innerText;
+            document.getElementById('letterEditArea').value = currentText;
+            document.getElementById('letterEditModal').classList.remove('hidden');
+        }
+
+        function closeLetterModal() {
+            document.getElementById('letterEditModal').classList.add('hidden');
+        }
+
+        function saveLetterModal() {
+            const newText = document.getElementById('letterEditArea').value;
+            if (newText.trim() !== '') {
+                document.getElementById('letterContent').innerText = newText;
+                localStorage.setItem('to_my_dear_letter', newText);
+                closeLetterModal();
+            }
+        }
+
+
+        /* ===================================================
+           6. WEB AUDIO API SYNTHESIZER
+           =================================================== */
+        let audioCtx = null;
+        let isPlaying = false;
+        let musicInterval = null;
+
+        function toggleAudio() {
+            const btnText = document.getElementById('musicText');
+            const btnIcon = document.getElementById('musicIcon');
+
+            if (!isPlaying) {
+                startRomanticMusic();
+                isPlaying = true;
+                btnText.innerText = "Music Playing 🎵";
+                btnIcon.className = "fa-solid fa-volume-high text-rose-600 animate-bounce";
+            } else {
+                stopRomanticMusic();
+                isPlaying = false;
+                btnText.innerText = "Play Sound";
+                btnIcon.className = "fa-solid fa-music text-rose-500";
+            }
+        }
+
+        function startRomanticMusic() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [261.63, 329.63, 392.00, 523.25, 440.00, 349.23, 329.63, 392.00];
+            let noteIdx = 0;
+            musicInterval = setInterval(() => {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                playNote(notes[noteIdx], 0.8);
+                noteIdx = (noteIdx + 1) % notes.length;
+            }, 600);
+        }
+
+        function stopRomanticMusic() { if (musicInterval) clearInterval(musicInterval); }
+
+        function playNote(freq, duration) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playChimeSound() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const chimes = [523.25, 659.25, 783.99, 1046.50];
+            chimes.forEach((freq, idx) => { setTimeout(() => playNote(freq, 1.2), idx * 150); });
+        }
+
+        // Initialize Standalone App on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadMemories();
+            loadSavedLetter();
+        });
+    </script>
+</body>
+</html>
